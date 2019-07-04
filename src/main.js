@@ -23,6 +23,7 @@ var showcode = require('./commands/showcode.js');
 var cd = require('./commands/cd.js');
 var authorize = require('./commands/authorize.js');
 var unauthorize = require('./commands/unauthorize.js');
+var runscript = require('./commands/runscript.js');
 
 var directory = homedir();
 
@@ -163,13 +164,26 @@ login(loginInfo, {
       return;
     }
 
+    
+    if(argv[0] == 'python'){
+      if (argv.length != 2) {
+        api.sendMessage('@fbash\nThe syntax of the command is incorrect.', 
+            message.threadID);
+        return;
+      }
+      var file = argv[1];
+      runscript(api, file, message.threadID) 
+      return;
+    }
+
     exec(message.body, {
       cwd: directory
     }, function(error, stdout, stderr) {
 
       // replaces periods in response with another character
       // to bypass Facebook's spam detection
-      stdout = replacePeriods(stdout, settings.periodReplacement);
+      if(argv[0] != 'python') //don't replace periods for ending of file names
+        stdout = replacePeriods(stdout, settings.periodReplacement);
       if (error)
         api.sendMessage('@fbash ERR:\n' + error, message.threadID);
       else {
